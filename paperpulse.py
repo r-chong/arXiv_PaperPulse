@@ -13,16 +13,19 @@ class MyClient(discord.Client):
     self.fetch_arxiv_papers.start()
     print(f'Logged on as {self.user}!')
 
+  # loops every 12 hours, customizable
+  # replace 'channel_id' with the ID of your channel (must be an integer)
   @tasks.loop(minutes=720.0)
   async def fetch_arxiv_papers(self):
-    # replace 'channel_id' with the ID of your channel (must be an integer)
     channel = self.get_channel(channel_id)
 
+    # query is customizable
     search = arxiv.Search(query="AI",
                           max_results=4,
                           sort_by=arxiv.SortCriterion.SubmittedDate)
 
-    # Print the paper details, one msg per paper
+    # Print the paper details in a nice discord msg, one per paper
+    # date is formatted to be readable
     for result in search.get():
       clean_date = result.published.strftime("%Y-%m-%d")
       await channel.send(f"**New paper published:**\n\n"
@@ -32,6 +35,7 @@ class MyClient(discord.Client):
                          f"**PDF URL:** {result.pdf_url}\n\n"
                          "-------------------------")
 
+# match permissions to dev console
 intents = discord.Intents.default()
 intents.messages = True
 
@@ -46,7 +50,6 @@ app = Flask(__name__)
 @app.route('/')
 def index():
   return "Bot up and running"
-
 
 if __name__ == '__main__':
   app.run(host="0.0.0.0", debug=True, port=8080)
